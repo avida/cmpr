@@ -1,0 +1,2 @@
+Import("glob_env")
+glob_env.Program("cmpr", "compress.cpp")

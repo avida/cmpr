@@ -1,0 +1,2 @@
+Import("glob_env", "srv_files")
+glob_env.Program("test", ["test_main.cpp", srv_files] )
