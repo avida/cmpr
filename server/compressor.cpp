@@ -5,49 +5,34 @@
 
 namespace server {
 
-void Compressor::DumpChar() {
-  switch (currentCharCount_) {
-    case 0:
-      break;
-    case 2:
-      outBuffer_ += currentChar_;
-    case 1:
-      outBuffer_ += currentChar_;
-      break;
-    default:
-      auto append = std::to_string(currentCharCount_) + currentChar_;
-      outBuffer_ += append;
-  }
-}
-
-CompressorError Compressor::Compress(StringPtr buffer) {
+CompressorError Compressor::Compress() {
   auto logger = spdlog::get("console");
-  std::string vec;
-  assert(currentChar_ != -1);
-  for (auto it = buffer->cbegin(); it != buffer->end(); it++) {
-    if (*it < 'a' || *it > 'z') {
-      logger->error("Wrong char {0}", *it);
+  auto unCompressedPos = 0;
+  auto compressedPos = 0;
+  while (unCompressedPos < buffer_.size()) {
+    auto currentChar = buffer_[unCompressedPos];
+    if (currentChar < 'a' || currentChar > 'z') {
+      logger->error("Wrong char {0}", currentChar);
       return UnexpectedChar;
     }
-    if (currentChar_ == 0) {
-      currentChar_ = *it;
-      currentCharCount_ = 1;
-      continue;
-    }
-    if (*it == currentChar_) {
-      currentCharCount_++;
+    auto nextPos = buffer_.find_first_not_of(currentChar, unCompressedPos);
+    auto consequtiveChars = nextPos == std::string::npos
+                                ? (buffer_.size() - unCompressedPos)
+                                : (nextPos - unCompressedPos);
+    if (consequtiveChars > 2) {
+      auto compressedString = std::to_string(consequtiveChars) + currentChar;
+      std::memcpy(&buffer_[compressedPos], &compressedString[0],
+                  compressedString.size());
+      compressedPos += compressedString.size();
     } else {
-      DumpChar();
-      currentChar_ = *it;
-      currentCharCount_ = 1;
+      std::memcpy(&buffer_[compressedPos], &buffer_[unCompressedPos],
+                  consequtiveChars);
+      compressedPos += consequtiveChars;
     }
+    unCompressedPos += consequtiveChars;
   }
-  return Ok;
-}
+  buffer_.resize(compressedPos);
 
-const std::string &Compressor::Finish() {
-  DumpChar();
-  currentChar_ = -1;
-  return outBuffer_;
+  return Ok;
 }
 }

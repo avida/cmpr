@@ -23,7 +23,7 @@ glob_env = Environment(CPPPATH=[Dir("3rdParty/Catch2/single_include"),
                                 Dir("3rdParty/CLI11/include"),
                                 Dir("3rdParty/concurrentqueue"),
                                 Dir(".")],
-                       CCFLAGS="-std=c++0x",
+                       CCFLAGS="-std=c++0x -g",
                        LIBS=["pthread", "boost_system"])
 Export ("glob_env", "srv_files", "srv_main", "test_files")
 
