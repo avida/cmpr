@@ -16,25 +16,25 @@ typedef std::unique_ptr<std::thread> ThreadUPtr;
 
 class WorkerThread {
  public:
-  WorkerThread() : stopped(false), drain(false) {
-    workerThread = utils::make_unique<std::thread>(([this]() {
+  WorkerThread() : stopped_(false), drain_(false) {
+    workerThread_ = utils::make_unique<std::thread>(([this]() {
       auto logger = spdlog::get("console");
       logger->info("Thread started");
-      while (!stopped) {
-        if (q.size_approx() == 0) {
+      while (!stopped_) {
+        if (jobQueue_.size_approx() == 0) {
           logger->info("Sleeping");
-          std::unique_lock<std::mutex> lk(m);
-          awake_cond.wait(lk);
+          std::unique_lock<std::mutex> lk(m_);
+          awakeCond_.wait(lk);
           logger->info("Time to wake up");
         }
         Job nextJob;
-        if (q.try_dequeue(nextJob)) {
+        if (jobQueue_.try_dequeue(nextJob)) {
           nextJob();
         }
       }
-      if (drain) {
+      if (drain_) {
         Job nextJob;
-        while (q.try_dequeue(nextJob)) {
+        while (jobQueue_.try_dequeue(nextJob)) {
           nextJob();
         }
       }
@@ -42,25 +42,25 @@ class WorkerThread {
   }
 
   void AddJob(Job job) {
-    q.enqueue(job);
-    if (q.size_approx() == 1) {
-      awake_cond.notify_one();
+    jobQueue_.enqueue(job);
+    if (jobQueue_.size_approx() == 1) {
+      awakeCond_.notify_one();
     }
   }
 
-  void Stop(bool do_drain = false) {
-    stopped = true;
-    drain = do_drain;
-    awake_cond.notify_one();
-    workerThread->join();
+  void Stop(bool drain = false) {
+    stopped_ = true;
+    drain_ = drain;
+    awakeCond_.notify_one();
+    workerThread_->join();
   }
 
  private:
-  ThreadUPtr workerThread;
-  moodycamel::ConcurrentQueue<Job> q;
-  bool stopped;
-  bool drain;
-  std::mutex m;
-  std::condition_variable awake_cond;
+  ThreadUPtr workerThread_;
+  moodycamel::ConcurrentQueue<Job> jobQueue_;
+  bool stopped_;
+  bool drain_;
+  std::mutex m_;
+  std::condition_variable awakeCond_;
 };
 }

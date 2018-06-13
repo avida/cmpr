@@ -11,16 +11,11 @@ int main(int argc, char *argv[]) {
 
 std::string TestFullCorrectString(const std::string &input) {
   std::string output;
-  server::Compressor cmp(
-      [&output](const std::string &vec, server::CompressorError err) {
-        REQUIRE(err != server::UnexpectedChar);
-        output += vec;
-      });
+  server::Compressor cmp;
   auto buf = std::make_shared<std::string>();
   *buf = input;
-  cmp.Compress(buf);
-  cmp.Finish();
-  return output;
+  REQUIRE(cmp.Compress(buf) == server::Ok);
+  return cmp.Finish();
 }
 
 void CheckString(const std::string &in, const std::string &expected) {
@@ -30,7 +25,7 @@ void CheckString(const std::string &in, const std::string &expected) {
 
 TEST_CASE("Simple test case", "[simple]") { REQUIRE(1 == 1); }
 
-TEST_CASE("Compressor test", "[cmpr]") {
+TEST_CASE("CompressorTest", "[cmpr]") {
   CheckString("qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqlllllllllllllloooooo",
               "31q14l6o");
   CheckString("a", "a");

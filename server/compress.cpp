@@ -16,10 +16,11 @@ void acceptConnection(const boost::system::error_code &error,
                       SessionPtr session) {
   auto console = spdlog::get("console");
   console->info("connection accepted");
-  auto new_session = std::make_shared<Session>(io_service);
-  acceptor.async_accept(new_session->socket(),
+  session->Read();
+  auto newSession = std::make_shared<Session>(io_service);
+  acceptor.async_accept(newSession->socket(),
                         std::bind(&acceptConnection, _1, std::ref(acceptor),
-                                  std::ref(io_service), new_session));
+                                  std::ref(io_service), newSession));
 }
 
 int main(int argc, char **argv) {
@@ -37,8 +38,7 @@ int main(int argc, char **argv) {
   acceptor.async_accept(session->socket(),
                         std::bind(&acceptConnection, _1, std::ref(acceptor),
                                   std::ref(io_service), session));
-  while (true) {
-    io_service.run();
-  }
+  session.reset();
+  io_service.run();
   console->error("BB");
 }

@@ -6,49 +6,48 @@
 namespace server {
 
 void Compressor::DumpChar() {
-  switch (currentCharCount) {
+  switch (currentCharCount_) {
     case 0:
       break;
     case 2:
-      out += currentChar;
+      outBuffer_ += currentChar_;
     case 1:
-      out += currentChar;
+      outBuffer_ += currentChar_;
       break;
     default:
-      auto append = std::to_string(currentCharCount) + currentChar;
-      out += append;
+      auto append = std::to_string(currentCharCount_) + currentChar_;
+      outBuffer_ += append;
   }
 }
 
-void Compressor::Compress(StringPtr buffer) {
+CompressorError Compressor::Compress(StringPtr buffer) {
   auto logger = spdlog::get("console");
   std::string vec;
+  assert(currentChar_ != -1);
   for (auto it = buffer->cbegin(); it != buffer->end(); it++) {
     if (*it < 'a' || *it > 'z') {
       logger->error("Wrong char {0}", *it);
-      cb("", UnexpectedChar);
-      return;
+      return UnexpectedChar;
     }
-    if (currentChar == 0) {
-      currentChar = *it;
-      currentCharCount = 1;
+    if (currentChar_ == 0) {
+      currentChar_ = *it;
+      currentCharCount_ = 1;
       continue;
     }
-    if (*it == currentChar) {
-      currentCharCount++;
+    if (*it == currentChar_) {
+      currentCharCount_++;
     } else {
       DumpChar();
-      currentChar = *it;
-      currentCharCount = 1;
+      currentChar_ = *it;
+      currentCharCount_ = 1;
     }
   }
-  cb(out, Ok);
-  out.clear();
+  return Ok;
 }
 
-void Compressor::Finish() {
+const std::string &Compressor::Finish() {
   DumpChar();
-  cb(out, Finished);
-  out.clear();
+  currentChar_ = -1;
+  return outBuffer_;
 }
 }
