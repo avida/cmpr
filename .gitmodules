@@ -4,3 +4,9 @@
 [submodule "3rdParty/Catch2"]
 	path = 3rdParty/Catch2
 	url = git@github.com:catchorg/Catch2.git
+[submodule "3rdParty/CLI11"]
+	path = 3rdParty/CLI11
+	url = git@github.com:CLIUtils/CLI11.git
+[submodule "3rdParty/concurrentqueue"]
+	path = 3rdParty/concurrentqueue
+	url = git@github.com:cameron314/concurrentqueue.git
