@@ -7,17 +7,18 @@
 #include <memory>
 #include <boost/thread/thread.hpp>
 #include <spdlog/spdlog.h>
+#include "server/utils.hpp"
 
 
 namespace server {
 
 typedef std::function<void()> Job;
-typedef std::unique_ptr<std::thread> ThreadPtr;
+typedef std::unique_ptr<std::thread> ThreadUPtr;
 
 class WorkerThread {
 public:
   WorkerThread(): stopped(false), drain(false){
-     workerThread = ThreadPtr(new std::thread([this](){
+     workerThread = utils::make_unique<std::thread>(([this](){
        auto logger = spdlog::get("console");
        logger->info("Thread started");
        while (!stopped) {
@@ -56,7 +57,7 @@ public:
     workerThread->join();
   }
 private:
-  ThreadPtr workerThread;
+  ThreadUPtr workerThread;
   moodycamel::ConcurrentQueue<Job> q;
   bool stopped;
   bool drain;

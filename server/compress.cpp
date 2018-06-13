@@ -1,24 +1,26 @@
 #include <iostream>
+
 #include <spdlog/spdlog.h>
 #include <CLI/CLI.hpp>
 #include <boost/asio.hpp>
 
+#include "session.hpp"
+
 namespace asio = boost::asio;
 using boost::asio::ip::tcp;
 using namespace std::placeholders;
+using namespace server;
 
-
-typedef std::shared_ptr<tcp::socket> SocketPtr;
 
 void acceptConnection(const boost::system::error_code &error,
                       tcp::acceptor &acceptor, asio::io_service &io_service, 
-                      SocketPtr socket){
+                      SessionPtr session){
   auto console = spdlog::get("console");
   console->info("connection accepted");
-  auto new_socket = std::make_shared<tcp::socket>(io_service);
-  acceptor.async_accept(*new_socket, std::bind(&acceptConnection, _1,
+  auto new_session = std::make_shared<Session>(io_service);
+  acceptor.async_accept(new_session->socket(), std::bind(&acceptConnection, _1,
                         std::ref(acceptor), std::ref(io_service),
-                        socket));
+                        new_session));
 }
 
 int main (int argc, char** argv){
@@ -32,10 +34,10 @@ int main (int argc, char** argv){
   console->info("Port: {0}", port);
   asio::io_service io_service;
   tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), port));
-  auto socket = std::make_shared<tcp::socket>(io_service);
-  acceptor.async_accept(*socket, std::bind(&acceptConnection, _1,
+  auto session = std::make_shared<Session>(io_service);
+  acceptor.async_accept(session->socket(), std::bind(&acceptConnection, _1,
                         std::ref(acceptor), std::ref(io_service),
-                        socket) );
+                        session) );
   while(true) {
     io_service.run();
   }

@@ -1,2 +1,2 @@
-Import("glob_env", "srv_files")
-glob_env.Program("test", ["test_main.cpp", "test_worker_thread.cpp", srv_files] )
+Import("glob_env", "srv_files", "test_files")
+glob_env.Program("test", [test_files, srv_files] )
