@@ -7,7 +7,7 @@ test_files = [Glob("test/*pp")]
 
 if "clang" in sys.argv:
   clang_cmd = local["clang-format"]
-  clang_args = "-i style=google"
+  clang_args = ["-i", "-style=google"]
   try:
      clang_cmd()
   except ProcessExecutionError:

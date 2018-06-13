@@ -20,11 +20,11 @@ void Compressor::DumpChar() {
   }
 }
 
-void Compressor::Compress(StringPtr buffer){
+void Compressor::Compress(StringPtr buffer) {
   auto logger = spdlog::get("console");
   std::string vec;
   for (auto it = buffer->cbegin(); it != buffer->end(); it++) {
-    if (*it < 'a' || *it >'z'){
+    if (*it < 'a' || *it > 'z') {
       logger->error("Wrong char {0}", *it);
       cb("", UnexpectedChar);
       return;
@@ -34,7 +34,7 @@ void Compressor::Compress(StringPtr buffer){
       currentCharCount = 1;
       continue;
     }
-    if (*it == currentChar){
+    if (*it == currentChar) {
       currentCharCount++;
     } else {
       DumpChar();
@@ -46,7 +46,7 @@ void Compressor::Compress(StringPtr buffer){
   out.clear();
 }
 
-void Compressor::Finish(){
+void Compressor::Finish() {
   DumpChar();
   cb(out, Finished);
   out.clear();
