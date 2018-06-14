@@ -28,12 +28,21 @@ class Application(cli.Application):
 
     def receiveStats(self):
         data = self.s.recv(kStatSize)
-        return struct.unpack("!iic", data)
+        return struct.unpack("!iib", data)
 
-    def main(self):
-        self.getStats()
-        self.ping()
-        self.compress()
+    def main(self, action = None):
+        if action == "stats":
+            self.getStats()
+        elif action == "ping":
+            self.ping()
+        elif action == "compress":
+            self.compress()
+        elif action == "reset":
+            self.reset()
+        else:
+            self.getStats()
+            self.ping()
+            self.compress()
 
     def connect(f):
         def wrap(self):
@@ -57,6 +66,11 @@ class Application(cli.Application):
     @connect
     def ping(self):
         self.sendHdr(kPing)
+        print (self.receiveResp())
+
+    @connect
+    def reset(self):
+        self.sendHdr(kResetStats)
         print (self.receiveResp())
 
     @connect

@@ -31,6 +31,8 @@ class StatsManager {
     }
     bytesReceived_ = bytesSent_ = payloadReceived_ = payloadSent_ = 0;
   };
+  uint32_t BytesReceived() { return bytesReceived_; }
+  uint32_t BytesSent() { return bytesSent_; }
 
  private:
   void IncrementInternal(uint32_t &value, size_t amount) {

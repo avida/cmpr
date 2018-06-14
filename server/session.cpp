@@ -10,14 +10,15 @@ void Session::ReadHeader() {
   asio::async_read(sock_, buffer, [thisPtr](const boost::system::error_code &ec,
                                             size_t bytesTransferred) {
     auto logger = spdlog::get("console");
+    thisPtr->stats_.IncrementBytesReceived(bytesTransferred);
     if (ec) {
       logger->info("error: {0}", ec.message());
       return;
     }
-    logger->info("Async read: {0}", bytesTransferred);
+    logger->debug("Async read: {0}", bytesTransferred);
     thisPtr->headerBuffer_.hdr.ToHost();
     auto &hdr = thisPtr->headerBuffer_.hdr;
-    logger->info("magic: {0}, pl: {1}, code: {2}", hdr.magicNumber,
+    logger->debug("magic: {0}, pl: {1}, code: {2}", hdr.magicNumber,
                  hdr.payloadLength, hdr.code);
     if (hdr.magicNumber != kMagicNumber) {
       thisPtr->SendErrorResponse(MagicNumberDontMatch);
@@ -25,6 +26,7 @@ void Session::ReadHeader() {
     }
     switch (hdr.code) {
       case ResetStats:
+        thisPtr->stats_.Reset();
       case Ping:
         thisPtr->SendErrorResponse(Ok);
         break;
@@ -52,8 +54,15 @@ void Session::ReadPayload() {
   auto buffer = asio::buffer(&buf[0], buf.size());
   asio::async_read(sock_, buffer, [thisPtr](const boost::system::error_code &ec,
                                             size_t bytesTransferred) {
+    thisPtr->stats_.IncrementBytesReceived(bytesTransferred);
     auto logger = spdlog::get("console");
-    logger->info("payload received, {0}", bytesTransferred);
+    logger->debug("payload received, {0}", bytesTransferred);
+    if (bytesTransferred != thisPtr->headerBuffer_.hdr.payloadLength) {
+      logger->error("Too few payload received, probably connection error");
+      return;
+    }
+    thisPtr->stats_.IncrementPayloadReceived(
+        thisPtr->headerBuffer_.hdr.payloadLength);
     thisPtr->worker_.AddJob([thisPtr]() {
       if (auto res = thisPtr->compressor_->Compress() != Compressor::Ok) {
         thisPtr->sock_.get_io_service().post(
@@ -70,18 +79,19 @@ void Session::ReadPayload() {
 
 void Session::SendStats() {
   auto thisPtr = shared_from_this();
-  headerBuffer_.stats.bytesReceived = 20;
-  headerBuffer_.stats.bytesSent = 24;
-  headerBuffer_.stats.compressRatio = 20;
+  headerBuffer_.stats.bytesReceived = stats_.BytesReceived();
+  headerBuffer_.stats.bytesSent = stats_.BytesSent();
+  headerBuffer_.stats.compressRatio = stats_.CalculateCompressionRatio();
   headerBuffer_.stats.ToNetwork();
   asio::async_write(
       sock_, asio::buffer(&headerBuffer_.rawData, sizeof(StatsReport)),
       [thisPtr](const boost::system::error_code &ec, size_t bytesTransferred) {
+        thisPtr->stats_.IncrementBytesSent(bytesTransferred);
         auto logger = spdlog::get("console");
         if (ec) {
           logger->info("error: {0}", ec.message());
         }
-        logger->info("Stats sent {0}", bytesTransferred);
+        logger->debug("Stats sent {0}", bytesTransferred);
       });
 }
 
@@ -95,18 +105,22 @@ void Session::SendErrorResponse(ResponceStatus errorCode, size_t payloadSize) {
   asio::async_write(
       sock_, asio::buffer(&headerBuffer_.rawData, sizeof(PacketHeader)),
       [thisPtr](const boost::system::error_code &ec, size_t bytesTransferred) {
+        thisPtr->stats_.IncrementBytesSent(bytesTransferred);
         auto logger = spdlog::get("console");
-        logger->info("Resp sent {0}", bytesTransferred);
+        logger->debug("Resp sent {0}", bytesTransferred);
       });
 }
 
 void Session::SendPayload() {
   auto thisPtr = shared_from_this();
   const auto &output = compressor_->Buffer();
+  // Compression should be taken into account even if sending would fail.
+  stats_.IncrementPayloadSent(output.size());
 
   asio::async_write(
       sock_, asio::buffer(&output[0], output.size()),
       [thisPtr](const boost::system::error_code &ec, size_t bytesTransferred) {
+        thisPtr->stats_.IncrementBytesReceived(bytesTransferred);
         auto logger = spdlog::get("console");
         logger->info("sent {0}", bytesTransferred);
         if (ec) {
@@ -115,5 +129,5 @@ void Session::SendPayload() {
       });
 }
 
-Session::~Session() { spdlog::get("console")->info("~Session"); }
+Session::~Session() { spdlog::get("console")->debug("~Session"); }
 }

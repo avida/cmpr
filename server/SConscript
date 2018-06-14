@@ -1,2 +1,2 @@
 Import("glob_env", "srv_main", "srv_files")
-glob_env.Program("cmpr", [srv_main, srv_files])
+glob_env.Program("server", [srv_main, srv_files])

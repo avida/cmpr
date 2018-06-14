@@ -4,6 +4,7 @@
 
 #include "compressor.hpp"
 #include "server/utils.hpp"
+#include "stat_mgr.hpp"
 #include "worker_thread.hpp"
 
 namespace asio = boost::asio;
@@ -65,13 +66,14 @@ typedef enum {
   UnsupportedRequestType,
   AddCustomStatusBelowThisLine = 33,
   MagicNumberDontMatch,
-  UnexpectedCharactes
+  UnexpectedCharactes,
 } ResponceStatus;
 
 class Session : public std::enable_shared_from_this<Session> {
  public:
-  Session(asio::io_service &io_service, server::WorkerThread &worker)
-      : sock_(io_service), worker_(worker) {}
+  Session(asio::io_service &io_service, WorkerThread &worker,
+          StatsManager &stats)
+      : sock_(io_service), worker_(worker), stats_(stats) {}
   tcp::socket &socket() { return sock_; }
   void ReadHeader();
   void ReadPayload();
@@ -86,6 +88,7 @@ class Session : public std::enable_shared_from_this<Session> {
   PacketBuffer headerBuffer_;
   WorkerThread &worker_;
   CompressorUPtr compressor_;
+  StatsManager &stats_;
 };
 typedef std::shared_ptr<Session> SessionPtr;
 }

@@ -1,7 +1,7 @@
 from plumbum import local, ProcessExecutionError
 import sys
 
-srv_main = File("server/compress.cpp")
+srv_main = File("server/main.cpp")
 srv_files = [Glob("server/*.cpp", exclude=str(srv_main))]
 test_files = [Glob("test/*pp")]
 
