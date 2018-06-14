@@ -5,7 +5,7 @@
 
 namespace server {
 
-CompressorError Compressor::Compress() {
+Compressor::CompressorError Compressor::Compress() {
   auto logger = spdlog::get("console");
   auto unCompressedPos = 0;
   auto compressedPos = 0;

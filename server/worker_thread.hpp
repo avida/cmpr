@@ -24,6 +24,8 @@ class WorkerThread {
         if (jobQueue_.size_approx() == 0) {
           logger->info("Sleeping");
           std::unique_lock<std::mutex> lk(m_);
+          // awakeCond_.wait(lk, [this]() ->bool{ return
+          // this->jobQueue_.size_approx() != 0 && !this->stopped_;});
           awakeCond_.wait(lk);
           logger->info("Time to wake up");
         }

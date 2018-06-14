@@ -14,7 +14,7 @@ std::string TestFullCorrectString(const std::string &input) {
   server::Compressor cmp(input.size());
   auto &buf = cmp.Buffer();
   buf = input;
-  REQUIRE(cmp.Compress() == server::Ok);
+  REQUIRE(cmp.Compress() == server::Compressor::Ok);
   return buf;
 }
 
