@@ -53,6 +53,7 @@ void Session::ReadPayload() {
   asio::async_read(sock_, buffer, [thisPtr](const boost::system::error_code &ec,
                                             size_t bytesTransferred) {
     auto logger = spdlog::get("console");
+    logger->info("payload received, {0}", bytesTransferred);
     thisPtr->worker_.AddJob([thisPtr]() {
       if (auto res = thisPtr->compressor_->Compress() != Compressor::Ok) {
         thisPtr->sock_.get_io_service().post(
@@ -64,7 +65,6 @@ void Session::ReadPayload() {
         });
       }
     });
-    logger->info("payload received, {0}", bytesTransferred);
   });
 }
 

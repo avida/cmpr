@@ -10,10 +10,7 @@ TEST_CASE("WorkerThreadTest", "[worker]") {
   server::WorkerThread thr;
   std::this_thread::sleep_for(std::chrono::seconds(1));
   auto someNumber = 0;
-  thr.AddJob([&logger, &someNumber]() {
-    logger->info("Job is being performed");
-    someNumber = 13;
-  });
+  thr.AddJob([&logger, &someNumber]() { someNumber = 13; });
   std::this_thread::sleep_for(std::chrono::milliseconds(200));
   thr.Stop();
   REQUIRE(someNumber == 13);

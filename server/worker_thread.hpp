@@ -19,15 +19,13 @@ class WorkerThread {
   WorkerThread() : stopped_(false), drain_(false) {
     workerThread_ = utils::make_unique<std::thread>(([this]() {
       auto logger = spdlog::get("console");
-      logger->info("Thread started");
+      logger->debug("Thread started");
       while (!stopped_) {
         if (jobQueue_.size_approx() == 0) {
-          logger->info("Sleeping");
+          logger->debug("Sleeping");
           std::unique_lock<std::mutex> lk(m_);
-          // awakeCond_.wait(lk, [this]() ->bool{ return
-          // this->jobQueue_.size_approx() != 0 && !this->stopped_;});
           awakeCond_.wait(lk);
-          logger->info("Time to wake up");
+          logger->debug("Time to wake up");
         }
         Job nextJob;
         if (jobQueue_.try_dequeue(nextJob)) {
