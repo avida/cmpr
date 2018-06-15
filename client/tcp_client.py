@@ -75,7 +75,7 @@ class Application(cli.Application):
 
     @connect
     def compress(self):
-        pl = 10 * "a"  + 40 * "b" + "cc" 
+        pl = 1003 * "a"  + 40 * "b" + 20002 * "f" +  "cc"
         self.sendHdr(kCompress, len(pl))
         self.s.send(pl)
         resp = self.receiveResp()

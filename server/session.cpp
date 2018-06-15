@@ -48,7 +48,14 @@ void Session::ReadHeader() {
 
 void Session::ReadPayload() {
   auto thisPtr = shared_from_this();
-  compressor_ = utils::make_unique<Compressor>(headerBuffer_.hdr.payloadLength);
+  try {
+    compressor_ =
+        utils::make_unique<Compressor>(headerBuffer_.hdr.payloadLength);
+  } catch (const std::bad_alloc &e) {
+    thisPtr->SendErrorResponse(UnknownError,
+                               thisPtr->compressor_->Buffer().size());
+    return;
+  }
   auto &buf = compressor_->Buffer();
 
   auto buffer = asio::buffer(&buf[0], buf.size());

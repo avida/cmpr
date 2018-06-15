@@ -8,29 +8,23 @@ TEST_CASE("StatManager", "") {
   server::StatsManager mgr;
   mgr.IncrementPayloadReceived(100);
   mgr.IncrementPayloadSent(98);
-  REQUIRE(mgr.CalculateCompressionRatio() == 2);
+  REQUIRE(mgr.CalculateCompressionRatio() == 98);
   mgr.Reset();
   REQUIRE(mgr.CalculateCompressionRatio() == 0);
   mgr.IncrementPayloadReceived(std::numeric_limits<uint32_t>::max());
   mgr.IncrementPayloadSent(std::numeric_limits<uint32_t>::max() - 1);
   // Very pure comprassion ratio, close to 0
-  REQUIRE(mgr.CalculateCompressionRatio() == 0);
+  REQUIRE(mgr.CalculateCompressionRatio() == 99);
   mgr.Reset();
   mgr.IncrementPayloadReceived(std::numeric_limits<uint32_t>::max());
   mgr.IncrementPayloadSent(1);
-  // Super effective comperssion ratio
-  REQUIRE(mgr.CalculateCompressionRatio() == 99);
+  // Techincally it should be 0 but we want to show user that something
+  // happened.
+  REQUIRE(mgr.CalculateCompressionRatio() == 1);
   mgr.Reset();
   mgr.IncrementPayloadReceived(100);
   mgr.IncrementPayloadSent(100);
   // This is still not the worst compression algorythm.
-  REQUIRE(mgr.CalculateCompressionRatio() == 0);
-}
-
-TEST_CASE("StatManagerPerfectCompression", "[!mayfail]") {
-  server::StatsManager mgr;
-  mgr.IncrementPayloadReceived(100);
-  mgr.IncrementPayloadSent(100);
   REQUIRE(mgr.CalculateCompressionRatio() == 100);
 }
 

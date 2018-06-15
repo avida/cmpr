@@ -18,11 +18,14 @@ class StatsManager {
   void IncrementPayloadSent(size_t bytes) {
     IncrementInternal(payloadSent_, bytes);
   }
-  short CalculateCompressionRatio() {
-    return payloadReceived_
-               ? 100 * ((double)(payloadReceived_ - payloadSent_) /
-                        payloadReceived_)
-               : 0;
+  unsigned char CalculateCompressionRatio() {
+    if (!payloadReceived_) {
+      return 0;
+    }
+
+    short res = static_cast<unsigned char>(
+        100 * ((double)payloadSent_ / payloadReceived_));
+    return res ? res : 1;
   }
   void Reset() {
     if (std::this_thread::get_id() != threadId_) {

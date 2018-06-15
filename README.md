@@ -8,7 +8,7 @@ All the compressing are executed on background thread without affecting on servi
 ## Environment
 Application was tested on latest debian 10, codename buster, but it should run on 9 as well. Compiled with gcc 6.3.0 and python 2.7 for build system and test client.
 
-# How to run
+## How to run
 To build application from sources use attached scripts:
 > ./build.sh && ./run.sh
 
@@ -16,7 +16,6 @@ if you want build script to install required packages use:
 > ./build.sh deploy
 
 It shoud be run on system with apt package manager and by the user.
-
 If you have troubles building source on your maching Ive created a docker file for you:
 > docker build . -t cmpr
 
@@ -45,7 +44,7 @@ Set of unit tests for most of basic classes.
 * Catch2 - Modern c++ headers only unittest library. Supports test tags, allows to specify single case or case set.
 * spdlog - high performance and tunable log library. Supports log level, multiple log sinks (with separate log level for each target), Able to do write log to
      syslog, file and to the console with support of terminal color schemes. Beats boost::log on benchmarks.
-     * CLI11 -  Lightweight command line parsing tool. Doesnt require additional variables.
+* CLI11 -  Lightweight command line parsing tool. Doesnt require additional variables.
      concurrentqueue - Lockfree queue implementation. Very fast, slightly better than std::queue + mutexes according to the benchmarks its author have provided.
 
 ## Assumptions

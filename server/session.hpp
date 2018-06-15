@@ -15,7 +15,7 @@ const uint32_t BufferSize = 10;
 namespace server {
 
 const int kMagicNumber = 0x53545259;
-const int kMaxPayload = 200;
+const int kMaxPayload = 32 * 1024;
 
 struct PacketHeader {
   uint32_t magicNumber;
