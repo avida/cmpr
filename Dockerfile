@@ -1,8 +1,9 @@
 FROM debian:9
 ADD . /cmpl
+EXPOSE 4000
 RUN apt-get update
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends apt-utils
+RUN apt-get install -y apt-utils
 RUN apt-get install -y sudo
 WORKDIR /cmpl
-RUN ./build.sh
+RUN ./build.sh deploy
 ENTRYPOINT ./run.sh

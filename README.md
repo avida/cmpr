@@ -8,23 +8,37 @@ All the compressing are executed on background thread without affecting on servi
 ## Environment
 Application was tested on latest debian 10, codename buster, but it should run on 9 as well. Compiled with gcc 6.3.0 and python 2.7 for build system and test client.
 
+# How to run
+To build application from sources use attached scripts:
+> ./build.sh && ./run.sh
+
+if you want build script to install required packages use:
+> ./build.sh deploy
+
+It shoud be run on system with apt package manager and by the user.
+
+If you have troubles building source on your maching Ive created a docker file for you:
+> docker build . -t cmpr
+
+> docker run cmpr -p 0.0.0.0:4000:4000
+
 ## Code structure
 
-server/server.cpp:
+- *server/server.cpp*: 
 Entry point for application. It initializes all data and sets up listening port, construct and run io_service. Code for accepting new connection and initiating reading request headers.
-server/session.{hpp,cpp}:
+- *server/session.{hpp,cpp}*: 
 Contains class for reading and processing requests, sending responses and initiating background data compressing.
-server/worker_thred.hpp:
+- *server/worker_thred.hpp*:
 Contains class for executing job on background thread. It has lockfree queue for storing incoming jobs. When background thread runs out of task it would fall into a sleep untill new task arrive.
-server/compressor.{hpp,cpp}:
+- *server/compressor.{hpp,cpp}*:
 Containg class for storing data buffer and executing compressing algorithm. Assuming that compressed data would be less or equal to the uncompressed it performs all the work in place i.e. reusing same buffer for output data.
-server/stat_mgr.hpp:
+- *server/stat_mgr.hpp*:
 Contains class for accumulating data that have been sent/received and calculate compression ratio. To get compression ratio I used formula CompressionRatio = (PayloadSent / PayloadReceived) * 100%
 So it required  additional variables to store payload without request/ response headers. I don't like mutexes so all the manipulation should be performed on the same thread. Otherwise std::runtime_exception
 would be thrown.
-client/tcp_client.py:
+- *client/tcp_client.py*:
 Simple test client written in Python.
-test/*.cpp:
+- *test/*.cpp*:
 Set of unit tests for most of basic classes.
 
 ## 3rdParty libraries
