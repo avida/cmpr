@@ -19,7 +19,7 @@ void Session::ReadHeader() {
     thisPtr->headerBuffer_.hdr.ToHost();
     auto &hdr = thisPtr->headerBuffer_.hdr;
     logger->debug("magic: {0}, pl: {1}, code: {2}", hdr.magicNumber,
-                 hdr.payloadLength, hdr.code);
+                  hdr.payloadLength, hdr.code);
     if (hdr.magicNumber != kMagicNumber) {
       thisPtr->SendErrorResponse(MagicNumberDontMatch);
       return;
