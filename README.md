@@ -6,7 +6,7 @@ Uncompressed data should have be more than 32KiB of length and contain only lowe
 All the compressing are executed on background thread without affecting on service response time.
 
 ## Environment
-Application was tested on debian7 on gcc 6 and python 2.7 for build system and test client.
+Application was tested on latest debian 10, codename buster, but it should run on 9 as well. Compiled with gcc 6.3.0 and python 2.7 for build system and test client.
 
 ## Code structure
 
